@@ -23,9 +23,3 @@ spring:
   redis:
     host: ${REDIS_HOST}
     port: 6379
-
-#  minio:
-#    bucket: filestorage
-#    url: http://localhost:9001
-#    accessKey: minioadmin
-#    secretKey: minioadmin

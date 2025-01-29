@@ -7,6 +7,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.Set;
+
 
 @NoArgsConstructor
 @AllArgsConstructor
@@ -26,4 +28,10 @@ public class User {
     @Column(name = "password")
     @Size(min = 8, max = 100, message = ("Password length must be in between 8 and 100 symbols"))
     private String password;
+
+    @OneToMany(mappedBy = "firstUser")
+    private Set<Friendship> subscribes;
+
+    @OneToMany(mappedBy = "secondUser")
+    private Set<Friendship> subscribers;
 }
