@@ -1,21 +1,16 @@
 package io.unitbean.service;
 
-import io.unitbean.model.security.UserDetailsImpl;
-import io.unitbean.repository.UserRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import io.unitbean.model.User;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
-import java.util.Optional;
+import java.util.List;
 
-public class UserService implements UserDetailsService {
-    @Autowired
-    private UserRepository userRepository;
+public interface UserService {
+    UserDetails loadUserByUsername(String username);
 
-    @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        Optional<UserDetailsImpl> userDetails = userRepository.findByUsername(username);
-        return userDetails.orElseThrow(() -> new UsernameNotFoundException("Пользователь не найден"));
-    }
+    User getUserById(Integer id);
+
+    List<User> getAllUsers();
+
+    List<User> getUsersByUsername(String username);
 }

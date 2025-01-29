@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <title>Друзья пользователя</title>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body>
+
+<div class="container">
+  <h1>Друзья</h1>
+
+  <table class="table">
+    <thead>
+    <tr>
+      <th>Имя пользователя</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="friend : ${friends}">
+      <td th:text="${friend.username}">Имя пользователя</td>
+    </tr>
+    </tbody>
+  </table>
+
+  <a th:href="@{/users}" class="btn btn-primary">Назад к пользователям</a>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.0.7/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>
