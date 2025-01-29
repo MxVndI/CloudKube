@@ -11,6 +11,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
 import java.util.Set;
 
 @Controller
@@ -38,10 +39,16 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
-    public String getUserProfileById(@PathVariable("id") Integer userId, Model model) {
+    public String getUserProfileById(@PathVariable("id") Integer userId, Model model, Principal principal) {
         log.debug("Received request getting profile for {} ", userId);
         User user = userService.getUserById(userId);
+        UserDetailsImpl currentUser = (UserDetailsImpl) userService.loadUserByUsername(principal.getName());
+        String friendshipStatus = friendshipService.getFriendshipStatus(currentUser.getId(), user.getId());
+
         model.addAttribute("user", user);
+        model.addAttribute("currentUser", currentUser);
+        model.addAttribute("friendshipStatus", friendshipStatus);
+
         return "user/profile";
     }
 
@@ -56,4 +63,6 @@ public class UserController {
         }
         return "user/all-users";
     }
+
+
 }

@@ -12,6 +12,9 @@
         <img src="/avatar.jpg" alt="Аватар пользователя" class="profile-avatar">
         <h1 class="profile-name" th:text="${user.username}">Иван Иванов</h1>
     </div>
+    <div class="friendship-status" th:if="${currentUser.id != user.id}">
+        <p th:text="${friendshipStatus}">Статус дружбы: Неизвестен</p>
+    </div>
     <div class="profile-actions">
         <form th:action="@{/users/add-friend}" method="post">
             <input type="hidden" name="id" th:value="${user.id}">

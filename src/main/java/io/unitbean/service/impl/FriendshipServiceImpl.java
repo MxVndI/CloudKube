@@ -5,6 +5,7 @@ import io.unitbean.model.Friendship;
 import io.unitbean.model.FriendshipId;
 import io.unitbean.model.User;
 import io.unitbean.repository.FriendshipRepository;
+import io.unitbean.repository.FriendshipRepositoryEmbeded;
 import io.unitbean.service.FriendshipService;
 import io.unitbean.service.UserService;
 import io.unitbean.service.friendship_status.*;
@@ -19,6 +20,7 @@ import java.util.stream.Collectors;
 public class FriendshipServiceImpl implements FriendshipService {
     private final UserService userService;
     private final FriendshipRepository friendshipRepository;
+    private final FriendshipRepositoryEmbeded friendshipRepositoryEmbeded;
 
     public void subscribeOnUser(Integer firstUserId, Integer secondUserId) {
         if (firstUserId.equals(secondUserId)) {
@@ -44,9 +46,9 @@ public class FriendshipServiceImpl implements FriendshipService {
         FriendshipStatusHandler handler = new NoFriendshipHandler(
                 new YouAreSubscribedHandler(
                         new SubscribedToYouHandler(
-                                new FriendsHandler()
-                        )
-                )
+                                new FriendsHandler(), friendshipRepositoryEmbeded
+                        ), friendshipRepositoryEmbeded
+                ), friendshipRepositoryEmbeded
         );
         return handler.checkFriendship(firstUserId, secondUserId);
     }
