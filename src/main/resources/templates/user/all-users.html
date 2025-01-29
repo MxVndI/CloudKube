@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Все пользователи</title>
+</head>
+<body>
+<h1>Список пользователей</h1>
+
+<!-- Форма поиска пользователей -->
+<form th:action="@{/users}" method="get">
+    <input type="text" name="username" placeholder="Введите имя пользователя" th:value="${param.username}">
+    <button type="submit">Найти</button>
+</form>
+
+<ul>
+    <li th:each="user : ${users}">
+        <a th:href="@{/users/{id}(id=${user.id})}" th:text="${user.username}"></a>
+    </li>
+</ul>
+</body>
+</html>

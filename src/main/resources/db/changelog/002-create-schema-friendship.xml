@@ -1,0 +1,31 @@
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
+
+    <changeSet id="2" author="Vovs">
+        <createTable tableName="friendships">
+            <column name="first_user_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="second_user_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <addPrimaryKey tableName="friendships" columnNames="first_user_id, second_user_id"/>
+
+        <addForeignKeyConstraint baseTableName="friendships"
+                                 baseColumnNames="first_user_id"
+                                 constraintName="fk_friendships_first_user"
+                                 referencedTableName="users"
+                                 referencedColumnNames="id"/>
+
+        <addForeignKeyConstraint baseTableName="friendships"
+                                 baseColumnNames="second_user_id"
+                                 constraintName="fk_friendships_second_user"
+                                 referencedTableName="users"
+                                 referencedColumnNames="id"/>
+    </changeSet>
+</databaseChangeLog>

@@ -5,4 +5,5 @@
   http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
 
   <include file="001-initial-schema.xml" relativeToChangelogFile="true"/>
+  <include file="002-create-schema-friendship.xml" relativeToChangelogFile="true"/>
 </databaseChangeLog>
