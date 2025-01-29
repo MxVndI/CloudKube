@@ -1,4 +1,6 @@
 spring:
+  profiles:
+    active: postgresql, mongodb
   config:
     import: optional:file:.env[.properties]
   jpa:
@@ -23,9 +25,6 @@ spring:
   redis:
     host: ${REDIS_HOST}
     port: 6379
-
-#  minio:
-#    bucket: filestorage
-#    url: http://localhost:9001
-#    accessKey: minioadmin
-#    secretKey: minioadmin
+  data:
+    mongodb:
+        uri: mongodb://${MONGO_HOST}:27017/user_posts
