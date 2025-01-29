@@ -6,11 +6,11 @@ import org.springframework.security.core.userdetails.UserDetails;
 import java.util.List;
 
 public interface UserService {
-    public UserDetails loadUserByUsername(String username);
+    UserDetails loadUserByUsername(String username);
 
-    public User getUserById(Integer id);
+    User getUserById(Integer id);
 
-    public List<User> getAllUsers();
+    List<User> getAllUsers();
 
-    public List<User> findUsersByUsername(String username);
+    List<User> getUsersByUsername(String username);
 }

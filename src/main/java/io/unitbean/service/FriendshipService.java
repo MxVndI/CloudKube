@@ -5,7 +5,13 @@ import io.unitbean.model.User;
 import java.util.Set;
 
 public interface FriendshipService {
-    public void subscribeOnUser(Integer firstUserId, Integer secondUserId);
+    void subscribeOnUser(Integer firstUserId, Integer secondUserId);
 
-    public Set<User> getUserFriends(Integer userId);
+    Set<User> getUserFriends(Integer userId);
+
+    String getFriendshipStatus(Integer firstUserId, Integer secondUserId);
+
+    Set<User> getUserSubscribes(Integer userId);
+
+    Set<User> getUserSubscribers(Integer userId);
 }
