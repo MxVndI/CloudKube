@@ -1,12 +1,13 @@
 package io.unitbean.service.impl;
 
-import io.unitbean.exception.UserNotFoundException;
+import io.unitbean.exception.UserAddToFriendsHimselfException;
 import io.unitbean.model.Friendship;
 import io.unitbean.model.FriendshipId;
 import io.unitbean.model.User;
 import io.unitbean.repository.FriendshipRepository;
-import io.unitbean.repository.UserRepository;
 import io.unitbean.service.FriendshipService;
+import io.unitbean.service.UserService;
+import io.unitbean.service.friendship_status.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -16,16 +17,15 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class FriendshipServiceImpl implements FriendshipService {
+    private final UserService userService;
     private final FriendshipRepository friendshipRepository;
-    private final UserRepository userRepository;
 
     public void subscribeOnUser(Integer firstUserId, Integer secondUserId) {
-        if (firstUserId.equals(secondUserId))
-            throw new RuntimeException("Нельзя добавить в друзья самого себя");
-        User firstUser = userRepository.findById(firstUserId)
-                .orElseThrow(() -> new UserNotFoundException("Пользователь с ID " + firstUserId + " не найден"));
-        User secondUser = userRepository.findById(secondUserId)
-                .orElseThrow(() -> new UserNotFoundException("Пользователь с ID " + secondUserId + " не найден"));
+        if (firstUserId.equals(secondUserId)) {
+            throw new UserAddToFriendsHimselfException("Нельзя добавить в друзья самого себя");
+        }
+        User firstUser = userService.getUserById(firstUserId);
+        User secondUser = userService.getUserById(secondUserId);
         Friendship friendship = new Friendship();
         FriendshipId friendshipId = new FriendshipId(firstUserId, secondUserId);
         friendship.setFriendshipId(friendshipId);
@@ -35,10 +35,31 @@ public class FriendshipServiceImpl implements FriendshipService {
     }
 
     public Set<User> getUserFriends(Integer userId) {
-        Set<User> userSubscribes = friendshipRepository.findAllByFirstUserId(userId).stream()
-                .map(user -> user.getSecondUser()).collect(Collectors.toSet());
-        Set<User> userSubscribers = friendshipRepository.findAllBySecondUserId(userId).stream()
-                .map(user -> user.getFirstUser()).collect(Collectors.toSet());
-        return userSubscribes.stream().filter(user -> userSubscribers.contains(user)).collect(Collectors.toSet());
+        return getUserSubscribes(userId).stream()
+                .filter(getUserSubscribers(userId)::contains)
+                .collect(Collectors.toSet());
+    }
+
+    public String getFriendshipStatus(Integer firstUserId, Integer secondUserId) {
+        FriendshipStatusHandler handler = new NoFriendshipHandler(
+                new YouAreSubscribedHandler(
+                        new SubscribedToYouHandler(
+                                new FriendsHandler()
+                        )
+                )
+        );
+        return handler.checkFriendship(firstUserId, secondUserId);
+    }
+
+    @Override
+    public Set<User> getUserSubscribes(Integer userId) {
+        return friendshipRepository.findAllByFirstUserId(userId).stream()
+                .map(Friendship::getSecondUser).collect(Collectors.toSet());
+    }
+
+    @Override
+    public Set<User> getUserSubscribers(Integer userId) {
+        return friendshipRepository.findAllBySecondUserId(userId).stream()
+                .map(Friendship::getFirstUser).collect(Collectors.toSet());
     }
 }
