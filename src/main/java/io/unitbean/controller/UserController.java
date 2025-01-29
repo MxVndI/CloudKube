@@ -2,8 +2,8 @@ package io.unitbean.controller;
 
 import io.unitbean.model.User;
 import io.unitbean.model.security.UserDetailsImpl;
-import io.unitbean.service.FriendshipService;
-import io.unitbean.service.UserService;
+import io.unitbean.service.impl.FriendshipServiceImpl;
+import io.unitbean.service.impl.UserServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
@@ -16,8 +16,8 @@ import java.util.Set;
 @RequestMapping("/users")
 @RequiredArgsConstructor
 public class UserController {
-    private final FriendshipService friendshipService;
-    private final UserService userService;
+    private final FriendshipServiceImpl friendshipService;
+    private final UserServiceImpl userService;
 
     @PostMapping("/add-friend")
     public String subscribeOnUser(Authentication authentication, @RequestParam("id") Integer userId) {

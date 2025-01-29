@@ -1,33 +1,37 @@
 package io.unitbean.controller;
 
 import io.unitbean.model.User;
-import io.unitbean.service.RegistrationService;
+import io.unitbean.service.AuthService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
 
 @Controller
 @RequiredArgsConstructor
-@RequestMapping("/register")
-public class RegistrationController {
-    private final RegistrationService registrationService;
+public class AuthController {
+    private final AuthService authService;
 
-    @GetMapping
+    @GetMapping("/login")
+    public String getLoginForm() {
+        return "auth/login";
+    }
+
+    @PostMapping("/login")
+    public String loginUser(@Validated User user) {
+        authService.loginUser(user);
+        return "user/profile";
+    }
+
+    @GetMapping("/register")
     public String getRegisterForm() {
         return "auth/register";
     }
 
-    @PostMapping
+    @PostMapping("/register")
     public String registerUser(@Validated User user) {
-        registrationService.registerUser(user);
+        authService.registerUser(user);
         return "auth/login";
-    }
-
-    @GetMapping("/53")
-    public String get52Form() {
-        return "auth/ahaha";
     }
 }
