@@ -9,19 +9,44 @@
 <body>
 <div class="profile-container">
     <div class="profile-header">
-        <img src="/avatar.jpg" alt="Аватар пользователя" class="profile-avatar">
-        <h1 class="profile-name" th:text="${user.username}">Иван Иванов</h1>
+
+        <img th:src="${imageUrl}" alt="User Image" class="profile-image"/>
+        <div th:if="${user != null}">
+            <p th:text="${user.username}"></p>
+        </div>
+        <div th:if="${user == null}">
+            <p>User not found.</p>
+        </div>
     </div>
+
     <div class="friendship-status" th:if="${currentUser.id != user.id}">
         <p th:text="${friendshipStatus}">Статус дружбы: Неизвестен</p>
     </div>
+
     <div class="profile-actions">
-        <form th:action="@{/users/add-friend}" method="post">
+
+        <form th:action="@{/users/add-friend}" method="post" th:if="${currentUser.id != user.id}">
             <input type="hidden" name="id" th:value="${user.id}">
             <button type="submit" id="add-friend-btn" class="btn">Добавить в друзья</button>
         </form>
+
         <a th:href="@{/users/{id}/friends(id=${user.id})}" class="btn">Список друзей</a>
+        <a th:href="@{/users/create-post}" th:if="${isCurrentUser}" class="btn">Создать пост</a>
+        <form th:action="@{/image}" method="post" enctype="multipart/form-data" th:if="${isCurrentUser}">
+            <input type="file" name="file" required="required" class="file-input"/>
+            <button type="submit" class="btn">Загрузить изображение</button>
+        </form>
+    </div>
+
+    <div class="user-posts">
+        <h2>Посты пользователя</h2>
+        <div th:each="post : ${userPosts}" class="post-item">
+            <p><strong>Содержимое:</strong> <span th:text="${post.content}">Содержимое поста</span></p>
+        </div>
     </div>
 </div>
+
+<div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}">Успех!</div>
+<div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}">Ошибка!</div>
 </body>
 </html>

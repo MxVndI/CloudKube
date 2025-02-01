@@ -34,4 +34,8 @@ public class User {
 
     @OneToMany(mappedBy = "secondUser")
     private Set<Friendship> subscribers;
+
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "id", referencedColumnName = "user_id", nullable = false)
+    private UserImage userImage;
 }

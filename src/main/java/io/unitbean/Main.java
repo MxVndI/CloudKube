@@ -1,19 +1,18 @@
 package io.unitbean;
 
-import io.github.cdimascio.dotenv.Dotenv;
+import io.unitbean.service.props.MinioProperties;
 import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.cache.annotation.EnableCaching;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 @EnableCaching
 @SpringBootApplication
-@EnableAutoConfiguration
+@EnableConfigurationProperties(MinioProperties.class)
+@EnableScheduling
 public class Main {
     public static void main(String[] args) {
-        Dotenv dotenv = Dotenv.configure().load();
-        dotenv.entries().forEach(entry -> System.setProperty(entry.getKey(), entry.getValue()));
-
-        SpringApplication.run(Main.class, args);
+       SpringApplication.run(Main.class, args);
     }
 }
