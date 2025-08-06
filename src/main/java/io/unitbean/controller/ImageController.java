@@ -26,7 +26,7 @@ import java.security.Principal;
 
 @Controller
 @RequiredArgsConstructor
-public class ImageContoller {
+public class ImageController {
     private final ImageService imageService;
     private final UserService userService;
 

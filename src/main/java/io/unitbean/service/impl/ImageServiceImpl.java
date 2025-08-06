@@ -2,6 +2,7 @@ package io.unitbean.service.impl;
 
 import io.minio.*;
 import io.unitbean.exception.ImageUploadException;
+import io.unitbean.model.User;
 import io.unitbean.model.UserImage;
 import io.unitbean.repository.UserImageRepository;
 import io.unitbean.service.ImageService;
@@ -13,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.InputStream;
+import java.util.Objects;
 import java.util.UUID;
 
 @Service
@@ -64,8 +66,9 @@ public class ImageServiceImpl implements ImageService {
         UserImage userImage = new UserImage();
         userImage.setUserId(userId);
         userImage.setUserImageName(fileName);
-        userImage.setUser(userService.getUserById(userId));
-        if (userImageRepository.findByUserId(userId) != null) {
+        User user = userService.getUserById(userId);
+        userImage.setUser(user);
+        if (Objects.nonNull(user)) {
             userImageRepository.deleteImageByUserId(userId);
         }
         userImageRepository.save(userImage);
@@ -82,8 +85,8 @@ public class ImageServiceImpl implements ImageService {
             final MultipartFile file
     ) {
         return file.getOriginalFilename()
-                .substring(file.getOriginalFilename()
-                        .lastIndexOf(".") + 1);
+                   .substring(file.getOriginalFilename()
+                   .lastIndexOf(".") + 1);
     }
 
     @SneakyThrows
