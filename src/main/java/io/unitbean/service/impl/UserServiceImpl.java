@@ -2,7 +2,9 @@ package io.unitbean.service.impl;
 
 import io.unitbean.exception.UserNotFoundException;
 import io.unitbean.model.User;
+import io.unitbean.model.UserImage;
 import io.unitbean.model.security.UserDetailsImpl;
+import io.unitbean.repository.UserImageRepository;
 import io.unitbean.repository.UserRepository;
 import io.unitbean.service.UserService;
 import lombok.extern.slf4j.Slf4j;
@@ -20,6 +22,8 @@ import java.util.Optional;
 public class UserServiceImpl implements UserDetailsService, UserService {
     @Autowired
     private UserRepository userRepository;
+    @Autowired
+    private UserImageRepository userImageRepository;
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
@@ -37,5 +41,13 @@ public class UserServiceImpl implements UserDetailsService, UserService {
 
     public List<User> getUsersByUsername(String username) {
         return userRepository.findByUsernameContainingIgnoreCase(username);
+    }
+
+    public String getUserImageName(Integer userId) {
+        try {
+            return userImageRepository.findByUserId(userId).getUserImageName();
+        } catch (Exception e) {
+            return "defaultimage.png";
+        }
     }
 }

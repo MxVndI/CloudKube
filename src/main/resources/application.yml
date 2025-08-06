@@ -28,3 +28,12 @@ spring:
   data:
     mongodb:
         uri: mongodb://${MONGO_HOST}:27017/user_posts
+minio:
+  bucket: ${MINIO_BUCKET}
+  url: ${MINIO_URL}
+  accessKey: ${MINIO_ACCESS_KEY}
+  secretKey: ${MINIO_SECRET_KEY}
+servlet:
+  multipart:
+    max-file-size: 10MB
+    max-request-size: 10MB

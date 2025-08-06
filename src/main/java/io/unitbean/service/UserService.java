@@ -13,4 +13,6 @@ public interface UserService {
     List<User> getAllUsers();
 
     List<User> getUsersByUsername(String username);
+
+    String getUserImageName(Integer userId);
 }

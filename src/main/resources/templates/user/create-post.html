@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Создание поста</title>
+    <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+<div class="post-container">
+    <h1>Создать новый пост</h1>
+    <form th:action="@{/users/posts}" method="post" th:object="${postDto}">
+        <div>
+            <label for="content">Содержимое поста:</label>
+            <textarea id="content" th:field="*{content}" rows="4" cols="50"></textarea>
+        </div>
+        <button type="submit" class="btn">Создать пост</button>
+    </form>
+    <a th:href="@{/users/{id}(id=${currentUser.id})}" class="btn">Назад к профилю</a>
+
+    <!-- Сообщения об успехе или ошибке -->
+    <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}">Успех!</div>
+    <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}">Ошибка!</div>
+</div>
+</body>
+</html>
