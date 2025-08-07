@@ -9,6 +9,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.Objects;
+import java.util.Optional;
+
 @Service
 @RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
@@ -16,13 +19,32 @@ public class AuthServiceImpl implements AuthService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-    public UserDetailsImpl loginUser(User user) {
-        return userRepository.findByUsername(user.getUsername()).get();
+    @Override
+    public Optional<UserDetailsImpl> loginUser(User user) {
+        Optional<UserDetailsImpl> dbUser = userRepository.findByUsername(user.getUsername());
+        if (dbUser.isEmpty()) {
+            return Optional.empty();
+        }
+
+        if (!passwordEncoder.matches(user.getPassword(), dbUser.get().getPassword())) {
+            return Optional.empty();
+        }
+
+        return Optional.of(new UserDetailsImpl(
+                dbUser.get().getPassword(),
+                dbUser.get().getUsername(),
+                dbUser.get().getId()
+        ));
     }
 
     public String registerUser(User user) {
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
-        userRepository.save(user);
-        return "User successful registered";
+        if (loginUser(user).isPresent()) {
+            return "Пользователь уже зарегистрирован";
+        } else {
+            // Кодируем пароль и сохраняем пользователя
+            user.setPassword(passwordEncoder.encode(user.getPassword()));
+            userRepository.save(user);
+            return "User successfully registered";
+        }
     }
 }
