@@ -5,6 +5,7 @@ import io.unitbean.model.enums.FriendshipStatus;
 import io.unitbean.repository.FriendshipRepositoryEmbeded;
 
 public class NoFriendshipHandler implements FriendshipStatusHandler {
+
     private final FriendshipStatusHandler next;
     private final FriendshipRepositoryEmbeded friendshipRepositoryEmbeded;
 

@@ -7,4 +7,5 @@
     <include file="001-initial-schema.xml" relativeToChangelogFile="true"/>
     <include file="002-create-schema-friendship.xml" relativeToChangelogFile="true"/>
     <include file="003-create-user-image-schema.xml" relativeToChangelogFile="true"/>
+    <include file="004-create-messages-schema.xml" relativeToChangelogFile="true"/>
 </databaseChangeLog>

@@ -24,7 +24,7 @@
     </div>
 
     <div class="profile-actions">
-
+        <a href="/chat" class="btn">Перейти в чат</a>
         <form th:action="@{/users/add-friend}" method="post" th:if="${currentUser.id != user.id}">
             <input type="hidden" name="id" th:value="${user.id}">
             <button type="submit" id="add-friend-btn" class="btn">Добавить в друзья</button>

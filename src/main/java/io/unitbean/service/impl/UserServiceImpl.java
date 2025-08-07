@@ -2,7 +2,6 @@ package io.unitbean.service.impl;
 
 import io.unitbean.exception.UserNotFoundException;
 import io.unitbean.model.User;
-import io.unitbean.model.UserImage;
 import io.unitbean.model.security.UserDetailsImpl;
 import io.unitbean.repository.UserImageRepository;
 import io.unitbean.repository.UserRepository;
@@ -20,6 +19,7 @@ import java.util.Optional;
 @Slf4j
 @Service
 public class UserServiceImpl implements UserDetailsService, UserService {
+
     @Autowired
     private UserRepository userRepository;
     @Autowired
