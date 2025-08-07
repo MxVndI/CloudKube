@@ -18,6 +18,7 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class FriendshipServiceImpl implements FriendshipService {
+
     private final UserService userService;
     private final FriendshipRepository friendshipRepository;
     private final FriendshipRepositoryEmbeded friendshipRepositoryEmbeded;

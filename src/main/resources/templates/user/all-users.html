@@ -7,6 +7,10 @@
 <body>
 <h1>Список пользователей</h1>
 
+<div>
+    <a href="/chat" class="btn btn-info">Перейти в чат</a>
+</div>
+
 <!-- Форма поиска пользователей -->
 <form th:action="@{/users}" method="get">
     <input type="text" name="username" placeholder="Введите имя пользователя" th:value="${param.username}">

@@ -1,17 +1,10 @@
 package io.unitbean.controller;
 
-import io.minio.GetObjectArgs;
-import io.minio.MinioClient;
 import io.unitbean.exception.ImageUploadException;
-import io.unitbean.model.User;
-import io.unitbean.model.UserMainImage;
 import io.unitbean.model.security.UserDetailsImpl;
 import io.unitbean.service.ImageService;
 import io.unitbean.service.UserService;
-import io.unitbean.service.props.MinioProperties;
 import lombok.RequiredArgsConstructor;
-import org.springframework.core.io.InputStreamResource;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;

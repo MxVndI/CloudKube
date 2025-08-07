@@ -32,7 +32,8 @@ public class WebSecurityConfig {
 
     @Bean
     public SecurityFilterChain webSecurityFilterChain(HttpSecurity http) throws Exception {
-        return http.authorizeRequests(auth -> auth.requestMatchers("/register").permitAll()
+        return http.authorizeRequests(auth -> auth.requestMatchers("/register", "/ws-chat/**", "/topic/**")
+                        .permitAll()
                         .anyRequest().authenticated())
                 .formLogin(form -> form
                         .loginPage("/login")

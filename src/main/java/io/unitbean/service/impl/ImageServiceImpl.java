@@ -1,6 +1,10 @@
 package io.unitbean.service.impl;
 
-import io.minio.*;
+import io.minio.BucketExistsArgs;
+import io.minio.GetObjectArgs;
+import io.minio.MakeBucketArgs;
+import io.minio.MinioClient;
+import io.minio.PutObjectArgs;
 import io.unitbean.exception.ImageUploadException;
 import io.unitbean.model.User;
 import io.unitbean.model.UserImage;
@@ -20,6 +24,7 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 public class ImageServiceImpl implements ImageService {
+
     private final MinioClient minioClient;
     private final MinioProperties minioProperties;
     private final UserService userService;
@@ -74,31 +79,22 @@ public class ImageServiceImpl implements ImageService {
         userImageRepository.save(userImage);
     }
 
-    private String generateFileName(
-            final MultipartFile file
-    ) {
+    private String generateFileName(final MultipartFile file) {
         String extension = getExtension(file);
         return UUID.randomUUID() + "." + extension;
     }
 
-    private String getExtension(
-            final MultipartFile file
-    ) {
-        return file.getOriginalFilename()
-                   .substring(file.getOriginalFilename()
-                   .lastIndexOf(".") + 1);
+    private String getExtension(final MultipartFile file) {
+        return file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf(".") + 1);
     }
 
     @SneakyThrows
-    private void saveImage(
-            final InputStream inputStream,
-            final String fileName
-    ) {
+    private void saveImage(final InputStream inputStream, final String fileName) {
         minioClient.putObject(PutObjectArgs.builder()
-                .stream(inputStream, inputStream.available(), -1)
-                .bucket(minioProperties.getBucket())
-                .object(fileName)
-                .build());
+                   .stream(inputStream, inputStream.available(), -1)
+                   .bucket(minioProperties.getBucket())
+                   .object(fileName)
+                   .build());
     }
 
     public byte[] getUserImage(String fileName) {
@@ -106,9 +102,9 @@ public class ImageServiceImpl implements ImageService {
         try {
             InputStream stream = minioClient.getObject(
                     GetObjectArgs.builder()
-                            .bucket(minioProperties.getBucket())
-                            .object(fileName)
-                            .build());
+                                 .bucket(minioProperties.getBucket())
+                                 .object(fileName)
+                                 .build());
             return stream.readAllBytes();
         } catch (Exception e) {
             throw new ImageUploadException("Failed to get user image: " + e.getMessage());

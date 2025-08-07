@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>WebSocket Chat</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1.5.0/dist/sockjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+    <style>
+        #chat {
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            height: 400px;
+            overflow-y: auto;
+            margin-bottom: 20px;
+            background-color: #f9f9f9;
+        }
+        .message {
+            margin-bottom: 10px;
+            padding: 8px 12px;
+            border-radius: 5px;
+            background-color: #e9f5ff;
+        }
+        .message-username {
+            font-weight: bold;
+            color: #2c6bb0;
+        }
+        .message-time {
+            font-size: 0.8em;
+            color: #666;
+            margin-left: 10px;
+        }
+        #message-input {
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+<div class="container mt-4">
+    <h1 class="mb-4">Чат</h1>
+
+    <div id="chat">
+        <!-- Существующие сообщения -->
+        <div th:each="message : ${messages}" class="message">
+            <span class="message-username" th:text="${message.user.username}">User</span>
+            <span class="message-time" th:text="${#temporals.format(message.timestamp, 'HH:mm')}">00:00</span>
+            <div th:text="${message.content}" class="mt-1">Message content</div>
+        </div>
+    </div>
+
+    <div class="input-group">
+        <input type="text" id="message-input" class="form-control" placeholder="Введите сообщение...">
+        <button class="btn btn-primary" onclick="sendMessage()">Отправить</button>
+    </div>
+</div>
+
+<script>
+    // Подключение к WebSocket
+    const socket = new SockJS('/ws-chat');
+    const stompClient = Stomp.over(socket);
+
+    // Функция для добавления сообщения в чат
+    function appendMessage(username, content, timestamp) {
+        const chatDiv = document.getElementById('chat');
+        const timeString = new Date(timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+
+        const messageHtml = `
+            <div class="messageDto">
+                <span class="message-username">${username}</span>
+                <span class="message-time">${timeString}</span>
+                <div class="mt-1">${content}</div>
+            </div>
+        `;
+
+        chatDiv.innerHTML += messageHtml;
+        chatDiv.scrollTop = chatDiv.scrollHeight;
+    }
+
+    // Подключение и подписка на сообщения
+    stompClient.connect({}, function(frame) {
+        console.log('Connected: ' + frame);
+
+        stompClient.subscribe('/topic/public', function(message) {
+            const msg = JSON.parse(message.body);
+            appendMessage(msg.user.username, msg.content, msg.timestamp);
+        });
+    });
+
+    // Отправка сообщения
+    function sendMessage() {
+        const messageInput = document.getElementById('message-input');
+        const content = messageInput.value.trim();
+
+        if (content) {
+            stompClient.send("/app/chat.sendMessage", {},
+                JSON.stringify({content: content}));
+            messageInput.value = '';
+        }
+    }
+
+    // Отправка по нажатию Enter
+    document.getElementById('message-input').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            sendMessage();
+        }
+    });
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
