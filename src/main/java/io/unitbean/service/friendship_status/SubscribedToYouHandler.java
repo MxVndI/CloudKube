@@ -4,7 +4,8 @@ import io.unitbean.model.FriendshipId;
 import io.unitbean.model.enums.FriendshipStatus;
 import io.unitbean.repository.FriendshipRepositoryEmbeded;
 
-public class SubscribedToYouHandler implements FriendshipStatusHandler{
+public class SubscribedToYouHandler implements FriendshipStatusHandler {
+
     private final FriendshipStatusHandler next;
     private final FriendshipRepositoryEmbeded friendshipRepositoryEmbeded;
 

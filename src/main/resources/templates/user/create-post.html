@@ -9,6 +9,9 @@
 <body>
 <div class="post-container">
     <h1>Создать новый пост</h1>
+    <div>
+        <a href="/chat" class="btn">Перейти в чат</a>
+    </div>
     <form th:action="@{/users/posts}" method="post" th:object="${postDto}">
         <div>
             <label for="content">Содержимое поста:</label>
