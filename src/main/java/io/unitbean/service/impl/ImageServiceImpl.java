@@ -99,15 +99,26 @@ public class ImageServiceImpl implements ImageService {
 
     public byte[] getUserImage(String fileName) {
         System.out.println(fileName + " FILENAME EEEEE");
+        String desiredKey = (fileName == null || fileName.isEmpty()) ? "defaultimage.png" : fileName;
         try {
             InputStream stream = minioClient.getObject(
                     GetObjectArgs.builder()
                                  .bucket(minioProperties.getBucket())
-                                 .object(fileName)
+                                 .object(desiredKey)
                                  .build());
             return stream.readAllBytes();
-        } catch (Exception e) {
-            throw new ImageUploadException("Failed to get user image: " + e.getMessage());
+        } catch (Exception primaryError) {
+            // Fallback to default image if requested key does not exist
+            try {
+                InputStream fallbackStream = minioClient.getObject(
+                        GetObjectArgs.builder()
+                                     .bucket(minioProperties.getBucket())
+                                     .object("defaultimage.png")
+                                     .build());
+                return fallbackStream.readAllBytes();
+            } catch (Exception fallbackError) {
+                throw new ImageUploadException("Failed to get user image: " + primaryError.getMessage());
+            }
         }
     }
 }

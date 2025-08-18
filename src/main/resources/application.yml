@@ -27,7 +27,7 @@ spring:
     port: 6379
   data:
     mongodb:
-        uri: mongodb://${MONGO_HOST}:27017/user_posts
+        uri: mongodb://${MONGO_USER}:${MONGO_PASSWORD}@${MONGO_HOST}:27017/user_posts?authSource=${MONGO_AUTH_DB:admin}
 minio:
   bucket: ${MINIO_BUCKET}
   url: ${MINIO_URL}

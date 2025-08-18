@@ -44,7 +44,8 @@ public class AuthController {
                     .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt)
                     .body(Map.of(
                             "message", "Login successful",
-                            "username", user.getUsername()
+                            "username", user.getUsername(),
+                            "token", jwt
                     ));
         } catch (AuthenticationException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)

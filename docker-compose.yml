@@ -6,8 +6,8 @@ services:
     container_name: cloudkube_postgres
     environment:
       POSTGRES_DB: cloudkube
-      POSTGRES_USER: Vovs
-      POSTGRES_PASSWORD: 123
+      POSTGRES_USER: ${POSTGRES_USERNAME}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     ports:
       - "5432:5432"
     volumes:
@@ -20,8 +20,8 @@ services:
     image: minio/minio:latest
     container_name: cloudkube_minio
     environment:
-      MINIO_ROOT_USER: minioadmin
-      MINIO_ROOT_PASSWORD: minioadmin
+      MINIO_ROOT_USER: ${MINIO_ACCESS_KEY}
+      MINIO_ROOT_PASSWORD: ${MINIO_SECRET_KEY}
     ports:
       - "9000:9000"
       - "9001:9001"
@@ -30,6 +30,28 @@ services:
     command: server /data --console-address ":9001"
     networks:
       - cloudkube_network
+
+  minio-init:
+    image: minio/mc:latest
+    container_name: cloudkube_minio_init
+    depends_on:
+      - minio
+    environment:
+      MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY}
+      MINIO_SECRET_KEY: ${MINIO_SECRET_KEY}
+      MINIO_BUCKET: ${MINIO_BUCKET:-user-images}
+    entrypoint: >
+      /bin/sh -c "
+      until (mc alias set local http://minio:9000 $${MINIO_ACCESS_KEY} $${MINIO_SECRET_KEY}); do echo 'waiting for minio...'; sleep 2; done;
+      mc mb -p local/$${MINIO_BUCKET} || true;
+      mc cp /seed/defaultimage.png local/$${MINIO_BUCKET}/defaultimage.png || true;
+      echo 'MinIO default image ensured.'
+      "
+    volumes:
+      - ./src/main/resources/defaultimage.png:/seed/defaultimage.png:ro
+    networks:
+      - cloudkube_network
+    restart: on-failure
 
   mongo:
     image: mongo:6
