@@ -35,8 +35,7 @@ public class ImageServiceImpl implements ImageService {
         try {
             createBucket();
         } catch (Exception e) {
-            throw new ImageUploadException("Image upload failed: "
-                    + e.getMessage());
+            throw new ImageUploadException("Image upload failed: " + e.getMessage());
         }
         if (file.isEmpty() || file.getOriginalFilename() == null) {
             throw new ImageUploadException("Файл должен иметь название");
@@ -46,11 +45,9 @@ public class ImageServiceImpl implements ImageService {
         try {
             inputStream = file.getInputStream();
         } catch (Exception e) {
-            throw new ImageUploadException("Image upload failed: "
-                    + e.getMessage());
+            throw new ImageUploadException("Image upload failed: " + e.getMessage());
         }
         saveImage(inputStream, fileName);
-        System.out.println(fileName + " " + userId);
         setUserImage(fileName, userId);
         return fileName;
     }
@@ -98,27 +95,27 @@ public class ImageServiceImpl implements ImageService {
     }
 
     public byte[] getUserImage(String fileName) {
-        System.out.println(fileName + " FILENAME EEEEE");
         String desiredKey = (fileName == null || fileName.isEmpty()) ? "defaultimage.png" : fileName;
+        String fallbackKey = "defaultimage.png";
+
         try {
-            InputStream stream = minioClient.getObject(
-                    GetObjectArgs.builder()
-                                 .bucket(minioProperties.getBucket())
-                                 .object(desiredKey)
-                                 .build());
-            return stream.readAllBytes();
+            return getImageBytes(desiredKey);
         } catch (Exception primaryError) {
-            // Fallback to default image if requested key does not exist
             try {
-                InputStream fallbackStream = minioClient.getObject(
-                        GetObjectArgs.builder()
-                                     .bucket(minioProperties.getBucket())
-                                     .object("defaultimage.png")
-                                     .build());
-                return fallbackStream.readAllBytes();
+                return getImageBytes(fallbackKey);
             } catch (Exception fallbackError) {
                 throw new ImageUploadException("Failed to get user image: " + primaryError.getMessage());
             }
+        }
+    }
+
+    private byte[] getImageBytes(String objectKey) throws Exception {
+        try (InputStream stream = minioClient.getObject(
+                GetObjectArgs.builder()
+                        .bucket(minioProperties.getBucket())
+                        .object(objectKey)
+                        .build())) {
+            return stream.readAllBytes();
         }
     }
 }
