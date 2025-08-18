@@ -1,6 +1,6 @@
 package io.unitbean.controller;
 
-import io.unitbean.dto.PostDto;
+import io.unitbean.dto.*;
 import io.unitbean.model.Post;
 import io.unitbean.model.User;
 import io.unitbean.model.security.UserDetailsImpl;
@@ -42,66 +42,68 @@ public class UserController {
     }
 
     @GetMapping("/{id}/friends")
-    public ResponseEntity<Set<Map<String, Object>>> getUserFriends(@PathVariable("id") Integer userId) {
+    public ResponseEntity<Set<FriendDto>> getUserFriends(@PathVariable("id") Integer userId) {
         log.debug("Received request getting friends for {} ", userId);
         Set<User> friends = friendshipService.getUserFriends(userId);
-        Set<Map<String, Object>> result = friends.stream().map(u -> {
-            Map<String, Object> m = new HashMap<>();
-            m.put("username", u.getUsername());
-            return m;
-        }).collect(Collectors.toSet());
+        Set<FriendDto> result = friends.stream()
+                .map(u -> new FriendDto(u.getUsername()))
+                .collect(Collectors.toSet());
         return ResponseEntity.ok(result);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<?> getUserProfileById(@PathVariable("id") Integer userId, Principal principal) {
+    public ResponseEntity<UserProfileDto> getUserProfileById(@PathVariable("id") Integer userId, Principal principal) {
         log.debug("Received request getting profile for {} ", userId);
         User user = userService.getUserById(userId);
         UserDetailsImpl currentUser = (UserDetailsImpl) userService.loadUserByUsername(principal.getName());
         String friendshipStatus = friendshipService.getFriendshipStatus(currentUser.getId(), user.getId());
-        List<Post> userPosts = postService.getUserPosts(userId);
+        List<PostResponseDto> userPosts = postService.getUserPosts(userId)
+                .stream()
+                .map(p -> new PostResponseDto(p.getContent()))
+                .collect(Collectors.toList());
         boolean isCurrentUser = currentUser.getId().equals(user.getId());
         String imageName = userService.getUserImageName(userId);
         imageService.getUserImage(imageName);
         String imageUrl = (imageName != null && !imageName.isEmpty()) ? "/images/" + imageName : "/images/defaultimage.png";
 
-        Map<String, Object> body = Map.of(
-                "user", Map.of("id", user.getId(), "username", user.getUsername()),
-                "currentUser", Map.of("id", currentUser.getId(), "username", currentUser.getUsername()),
-                "friendshipStatus", friendshipStatus,
-                "userPosts", userPosts,
-                "isCurrentUser", isCurrentUser,
-                "imageUrl", imageUrl
+        UserProfileDto body = new UserProfileDto(
+                new UserSummaryDto(user.getUsername()),
+                friendshipStatus,
+                userPosts,
+                isCurrentUser,
+                imageUrl
         );
         return ResponseEntity.ok(body);
     }
 
     @GetMapping
-    public ResponseEntity<List<Map<String, Object>>> findUsersByUsername(@RequestParam(required = false) String username) {
+    public ResponseEntity<List<UserSummaryDto>> findUsersByUsername(@RequestParam(required = false) String username) {
         List<User> users = (username != null && !username.isEmpty())
                 ? userService.getUsersByUsername(username)
                 : userService.getAllUsers();
-        List<Map<String, Object>> result = users.stream()
-                .map(u -> {
-                    Map<String, Object> m = new HashMap<>();
-                    m.put("id", u.getId());
-                    m.put("username", u.getUsername());
-                    return m;
-                })
+        List<UserSummaryDto> result = users.stream()
+                .map(u -> new UserSummaryDto(u.getUsername()))
                 .collect(Collectors.toList());
         return ResponseEntity.ok(result);
     }
 
     @PostMapping("/posts")
-    public ResponseEntity<?> createUserPost(Principal principal, @Valid @RequestBody PostDto postDto, BindingResult bindingResult) {
+    public ResponseEntity<?> createUserPost(Principal principal,
+                                            @Valid @RequestBody(required = false) PostDto postDto,
+                                            @RequestParam(value = "content", required = false) String content,
+                                            BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
             return ResponseEntity.badRequest().body(Map.of("error", "Validation failed"));
         }
         UserDetailsImpl currentUser = (UserDetailsImpl) userService.loadUserByUsername(principal.getName());
         log.debug("Received request creating post for {} ", currentUser.getId());
         try {
-            Post created = postService.createPost(currentUser.getId(), postDto.getContent());
-            return ResponseEntity.ok(created);
+            String bodyContent = (postDto != null && postDto.getContent() != null) ? postDto.getContent() : content;
+            if (bodyContent == null || bodyContent.isBlank()) {
+                return ResponseEntity.badRequest().body(Map.of("error", "content is required"));
+            }
+            Post created = postService.createPost(currentUser.getId(), bodyContent);
+            return ResponseEntity.ok(new PostResponseDto(created.getContent()));
         } catch (Exception e) {
             log.error("Error creating post: ", e);
             return ResponseEntity.internalServerError().body(Map.of("error", "Failed to create post"));

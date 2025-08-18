@@ -24,8 +24,10 @@ public class ChatController {
     private final UserService userService;
 
     @GetMapping("/chat")
-    public List<Message> showChatPage() {
-        return messageRepository.findTop50ByOrderByTimestampAsc();
+    public List<MessageDto> showChatPage() {
+        return messageRepository.findTop50ByOrderByTimestampAsc().stream()
+                .map(m -> new MessageDto(m.getContent(), m.getTimestamp(), m.getUser().getUsername()))
+                .toList();
     }
 
     @MessageMapping("/chat.sendMessage")
@@ -37,12 +39,7 @@ public class ChatController {
         chatMessage.setUser(user);
         chatMessage.setName(userDetails.getUsername());
         messageRepository.save(chatMessage);
-        return new MessageDto(
-                chatMessage.getId(),
-                chatMessage.getContent(),
-                chatMessage.getTimestamp(),
-                user.getUsername()
-        );
+        return new MessageDto(chatMessage.getContent(), chatMessage.getTimestamp(), user.getUsername());
     }
 
     @MessageMapping("/chat.addUser")

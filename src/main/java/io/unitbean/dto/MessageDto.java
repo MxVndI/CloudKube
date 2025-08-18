@@ -10,7 +10,6 @@ import java.time.Instant;
 @NoArgsConstructor
 @AllArgsConstructor
 public class MessageDto {
-    private Integer id;
     private String content;
     private Instant timestamp;
     private String username;
