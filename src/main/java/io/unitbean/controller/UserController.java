@@ -11,16 +11,19 @@ import io.unitbean.service.impl.FriendshipServiceImpl;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
+import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.security.Principal;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
-@Controller
+@RestController
 @RequestMapping("/users")
 @RequiredArgsConstructor
 @Slf4j
@@ -31,23 +34,27 @@ public class UserController {
     private final ImageService imageService;
 
     @PostMapping("/add-friend")
-    public String subscribeOnUser(Principal principal, @RequestParam("id") Integer userId) {
+    public ResponseEntity<?> subscribeOnUser(Principal principal, @RequestParam("id") Integer userId) {
         UserDetailsImpl userDetails = (UserDetailsImpl) userService.loadUserByUsername(principal.getName());
         friendshipService.subscribeOnUser(userDetails.getId(), userId);
         log.debug("Received request for {} adding friend {}", userDetails.getUsername(), userId);
-        return "redirect:/users/" + userId;
+        return ResponseEntity.ok(Map.of("message", "Friend added", "userId", userId));
     }
 
     @GetMapping("/{id}/friends")
-    public String getUserFriends(@PathVariable("id") Integer userId, Model model) {
+    public ResponseEntity<Set<Map<String, Object>>> getUserFriends(@PathVariable("id") Integer userId) {
         log.debug("Received request getting friends for {} ", userId);
         Set<User> friends = friendshipService.getUserFriends(userId);
-        model.addAttribute("friends", friends);
-        return "user/user-friends";
+        Set<Map<String, Object>> result = friends.stream().map(u -> {
+            Map<String, Object> m = new HashMap<>();
+            m.put("username", u.getUsername());
+            return m;
+        }).collect(Collectors.toSet());
+        return ResponseEntity.ok(result);
     }
 
     @GetMapping("/{id}")
-    public String getUserProfileById(@PathVariable("id") Integer userId, Model model, Principal principal) {
+    public ResponseEntity<?> getUserProfileById(@PathVariable("id") Integer userId, Principal principal) {
         log.debug("Received request getting profile for {} ", userId);
         User user = userService.getUserById(userId);
         UserDetailsImpl currentUser = (UserDetailsImpl) userService.loadUserByUsername(principal.getName());
@@ -56,58 +63,48 @@ public class UserController {
         boolean isCurrentUser = currentUser.getId().equals(user.getId());
         String imageName = userService.getUserImageName(userId);
         imageService.getUserImage(imageName);
-        String imageUrl = null;
-        if (imageName != null && !imageName.isEmpty()) {
-            imageUrl = "/images/" + imageName;
-        }
-        System.out.println(imageUrl + " AAAAAAAAAAAAAAAAAAAA");
-        model.addAttribute("user", user);
-        model.addAttribute("currentUser", currentUser);
-        model.addAttribute("friendshipStatus", friendshipStatus);
-        model.addAttribute("userPosts", userPosts);
-        model.addAttribute("isCurrentUser", isCurrentUser);
-        model.addAttribute("imageUrl", imageUrl);
-        return "user/profile";
+        String imageUrl = (imageName != null && !imageName.isEmpty()) ? "/images/" + imageName : "/images/defaultimage.png";
+
+        Map<String, Object> body = Map.of(
+                "user", Map.of("id", user.getId(), "username", user.getUsername()),
+                "currentUser", Map.of("id", currentUser.getId(), "username", currentUser.getUsername()),
+                "friendshipStatus", friendshipStatus,
+                "userPosts", userPosts,
+                "isCurrentUser", isCurrentUser,
+                "imageUrl", imageUrl
+        );
+        return ResponseEntity.ok(body);
     }
 
     @GetMapping
-    public String findUsersByUsername(@RequestParam(required = false) String username, Model model) {
-        if (username != null && !username.isEmpty()) {
-            log.debug("Received request getting users");
-            model.addAttribute("users", userService.getUsersByUsername(username));
-        } else {
-            log.debug("Received request getting users with filter");
-            model.addAttribute("users", userService.getAllUsers());
-        }
-        return "user/all-users";
+    public ResponseEntity<List<Map<String, Object>>> findUsersByUsername(@RequestParam(required = false) String username) {
+        List<User> users = (username != null && !username.isEmpty())
+                ? userService.getUsersByUsername(username)
+                : userService.getAllUsers();
+        List<Map<String, Object>> result = users.stream()
+                .map(u -> {
+                    Map<String, Object> m = new HashMap<>();
+                    m.put("id", u.getId());
+                    m.put("username", u.getUsername());
+                    return m;
+                })
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(result);
     }
 
     @PostMapping("/posts")
-    public String createUserPost(Principal principal, @Valid PostDto postDto, BindingResult bindingResult) {
+    public ResponseEntity<?> createUserPost(Principal principal, @Valid @RequestBody PostDto postDto, BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
-            return "user/create-post";
+            return ResponseEntity.badRequest().body(Map.of("error", "Validation failed"));
         }
-
         UserDetailsImpl currentUser = (UserDetailsImpl) userService.loadUserByUsername(principal.getName());
         log.debug("Received request creating post for {} ", currentUser.getId());
-
         try {
-            postService.createPost(currentUser.getId(), postDto.getContent());
+            Post created = postService.createPost(currentUser.getId(), postDto.getContent());
+            return ResponseEntity.ok(created);
         } catch (Exception e) {
             log.error("Error creating post: ", e);
-            bindingResult.reject("postCreationError", "Не удалось создать пост. Попробуйте еще раз.");
-            return "user/create-post";
+            return ResponseEntity.internalServerError().body(Map.of("error", "Failed to create post"));
         }
-
-        return "redirect:/users/" + currentUser.getId();
     }
-
-    @GetMapping("/create-post")
-    public String showCreatePostForm(Model model, Principal principal) {
-        UserDetailsImpl currentUser = (UserDetailsImpl) userService.loadUserByUsername(principal.getName());
-        model.addAttribute("postDto", new PostDto());
-        model.addAttribute("currentUser", currentUser);
-        return "user/create-post";
-    }
-
 }

@@ -10,14 +10,13 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.handler.annotation.SendTo;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.security.Principal;
 import java.util.List;
 
-@Controller
+@RestController
 @RequiredArgsConstructor
 public class ChatController {
 
@@ -25,10 +24,8 @@ public class ChatController {
     private final UserService userService;
 
     @GetMapping("/chat")
-    public String showChatPage(Model model) {
-        List<Message> messages = messageRepository.findTop50ByOrderByTimestampAsc();
-        model.addAttribute("messages", messages);
-        return "chat";
+    public List<Message> showChatPage() {
+        return messageRepository.findTop50ByOrderByTimestampAsc();
     }
 
     @MessageMapping("/chat.sendMessage")

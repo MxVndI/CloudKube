@@ -7,34 +7,39 @@ import io.unitbean.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.security.Principal;
+import java.util.Map;
 
-@Controller
+@RestController
 @RequiredArgsConstructor
 public class ImageController {
     private final ImageService imageService;
     private final UserService userService;
 
     @PostMapping("/image")
-    public String setUserImage(@RequestParam("file") MultipartFile file,
-                               Principal principal,
-                               Model model) {
+    public ResponseEntity<?> setUserImage(@RequestParam("file") MultipartFile file,
+                                          Principal principal) {
         try {
             UserDetailsImpl userDetails = (UserDetailsImpl) userService.loadUserByUsername(principal.getName());
             Integer userId = userDetails.getId();
-            imageService.upload(file, userId);
-            return "redirect:/users/" + userId;
+            String fileName = imageService.upload(file, userId);
+            return ResponseEntity.ok(Map.of(
+                    "message", "Image uploaded",
+                    "userId", userId,
+                    "fileName", fileName
+            ));
         } catch (Exception e) {
-            model.addAttribute("errorMessage", "Failed to upload image: " + e.getMessage());
-            return "user/profile";
+            return ResponseEntity.badRequest().body(Map.of(
+                    "error", "Failed to upload image",
+                    "details", e.getMessage()
+            ));
         }
     }
 
